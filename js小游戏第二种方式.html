@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		html,body{
+			height: 800px;
+            background-image: url('img/17.webp');
+            background-size: 100% 100%;
+            margin: 0;
+            padding: 0;
+		}
+		.content{
+			width: 100%;
+			height: 100%;
+			/* background: #ccc; */
+			margin: 0 auto;
+		}
+		.scene{
+			width: 80%;
+			height: 100%;
+			/* background: rgba(0, 0, 0, 0.8); */
+			float: left;
+			position: relative;
+		}
+		.control{
+			width: 20%;
+			height: 100%;
+			/* background: rgba(0, 0, 0, 0.7); */
+			float: left;
+		}
+        .wenzi{
+            width: 100px;
+            height: 50px;
+            font-size: 20px;
+            text-align: center;
+            line-height: 50px;
+            color: #fff;
+            background: green;
+            border-radius: 70%;
+        }
+        .scor{
+            width: 100px;
+            height: 50px;
+            font-size: 24px;
+            text-align: center;
+            line-height: 50px;
+            font-weight: 600;
+            color: #333;
+            /* background: blue; */
+        }
+        .state{
+             width: 100px;
+            height: 50px;
+            font-size: 24px;
+            text-align: center;
+            line-height: 50px;
+            font-weight: 600;
+            color: #333;
+        }
+        .life{
+             width: 100px;
+            height: 50px;
+            font-size: 24px;
+            text-align: center;
+            line-height: 50px;
+            font-weight: 600;
+            color: #333;
+        }
+		.letter{
+			width: 100px;
+			height: 100px;
+			text-align: center;
+			line-height: 100px;
+			font-weight: 600;
+            color: red;
+            text-shadow: 2px 2px 4px blue,4px 4px 4px purple,6px 6px 4px brown,8px 8px 4px yellow;
+			font-size:60px;
+			position: absolute;
+		}
+        .start{
+            width: 200px;
+            height: 40px;
+            background: rgba(114, 104, 225, 0.7);
+            font-size: 20px;
+            text-align: center;
+            line-height: 40px;
+            color: #000;
+            font-weight: 400;
+            border: 0;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .pause{
+            width: 200px;
+            height: 40px;
+            background: rgba(114, 104, 225, 0.7);
+            font-size: 20px;
+            text-align: center;
+            line-height: 40px;
+            color: #000;
+            font-weight: 400;
+            border: 0;
+            margin-bottom: 5px;
+             cursor: pointer;
+        }
+        .over{
+            width: 200px;
+            height: 40px;
+            background: rgba(114,104, 225, 0.7);
+            font-size: 20px;
+            text-align: center;
+            line-height: 40px;
+            color: #000;
+            font-weight: 400;
+            border: 0;
+            cursor: pointer;
+        }
+	</style>
+</head>
+<body>
+	<div class="content">
+		<div class="scene"></div>
+		<div class="control">
+			<div class="wenzi">得分</div>
+			<div class="scor">0</div>
+			<div class="wenzi">关卡</div>
+			<div class="state">1</div>
+			<div class="wenzi">生命</div>
+			<div class="life">5</div>
+			<button class="start">开始游戏</button>
+			<button class="pause">暂停游戏</button>
+			<button class="over">结束游戏</button>
+		</div>
+	</div>
+</body>
+<script>
+	// 第二种方式：面向对象编程
+    class Game {
+        constructor() {
+            this.scene=document.querySelector(".scene");
+            this.scorEle=document.querySelector(".scor");
+            this.stateEle=document.querySelector(".state");
+            this.lifeEle=document.querySelector(".life"); 
+            this._init();          
+        }
+        // 初始化
+        _init(){
+        	this.scor=0;
+        	this.scorEle.innerHTML=this.scor;
+        	this.state=1;
+        	this.stateEle.innerHTML=this.state;
+        	this.life=5;
+        	this.lifeEle.innerHTML=this.life;
+        	this.num=1;
+            this.obj={};   //保存当前字母以及字母的详细信息
+            this.speed=5;
+            this.h=window.innerHeight;
+            this.t=0;   //保存时间函数
+            this.flag=true;  //当前能不能开始
+            this.scene.innerHTML="";
+        }
+       	// 开始游戏方法
+        start() {
+            for (let i=0; i < this.num; i++) {
+                this._createLetter();
+            }
+            this._move();
+            this._keydown();
+        }
+
+        //创建字母
+        _createLetter() {
+            let newdiv=document.createElement("div");
+            newdiv.className="letter";
+            do {
+                var randomNum=Math.floor(Math.random() * 26 + 65);
+                var randomLetter=String.fromCharCode(randomNum);
+            } while (this.obj[randomLetter]);
+           
+            do {
+                var randomLeft=Math.floor(Math.random() * 900);
+            } while (this._checkleft(randomLeft));
+
+            let randomTop=-Math.floor(Math.random() * 100);
+            newdiv.innerHTML=randomLetter;
+            newdiv.style.left=randomLeft + "px";
+            newdiv.style.top=randomTop + "px";
+            this.scene.appendChild(newdiv);
+            this.obj[randomLetter]={left: randomLeft, top: randomTop, ele: newdiv}
+        }
+        // 判断当前位置是否和其他任意一个位置重复的方法
+        _checkleft(newleft) {
+            for (let i in this.obj) {
+                if (newleft > this.obj[i].left - 100 && newleft < this.obj[i].left + 100) {
+                    return true;
+                }
+            }
+        }
+        // 向下落的时间函数
+        _move() {
+            this.t=setInterval(function () {
+                for (let i in this.obj) {
+                    let t1=this.obj[i].top;
+                    t1+=this.speed;
+                    this.obj[i].ele.style.top=t1 + "px";
+                    this.obj[i].top=t1;
+                    if(t1>this.h){
+                        this.life--;
+                        this.lifeEle.innerHTML=this.life;
+                        this.scene.removeChild(this.obj[i].ele);
+                        delete this.obj[i];
+                        this._createLetter();
+                        if(this.life===0){                        	
+                            alert("游戏结束，得分为"+this.scor+"")
+                            	this.gameover();
+                        }
+                    }
+                }
+            }.bind(this), 50)
+        }
+        // 键盘消除字母
+        _keydown() {
+            document.onkeydown=function (e) {
+                let kc=e.keyCode;
+                let letter=String.fromCharCode(kc);
+                if (this.obj[letter]) {
+                    this.scene.removeChild(this.obj[letter].ele);
+                    delete this.obj[letter];
+                    this._createLetter();
+                    this.scor++;
+                    this.scorEle.innerHTML=this.scor;
+                    if (this.scor % 10 === 0) {
+                        this._nextState();
+                    }
+                }
+            }.bind(this);
+        }
+        // 下一关卡游戏难度增加
+        _nextState() {
+            this.state++;
+            this.stateEle.innerHTML=this.state;
+            if(this.state<=4) {
+                this._createLetter();
+            }else{
+                this.speed+=2;
+            }
+        }
+        // 暂停游戏
+        pause(){
+           clearInterval(this.t);
+        }
+        // 继续游戏
+        running(){
+            this._move();
+        }
+        // 游戏结束
+        gameover(){
+        	clearInterval(this.t);
+        	this._init();               
+        }
+    }
+    let game=new Game();
+    // 点击开始游戏
+    let startBtn=document.querySelector(".start");
+    startBtn.onclick=function(){
+    	if(game.flag){
+        	game.start();
+            game.flag=false;
+    	}
+    };
+    // 点击暂停/继续游戏
+    let pauseBtn=document.querySelector(".pause");
+    let flag=true;
+    pauseBtn.onclick=function(){
+        if(flag) {
+            game.pause();
+            pauseBtn.innerHTML="继续游戏";
+        }else{
+            game.running();
+            pauseBtn.innerHTML="暂停游戏";
+        }
+        flag=!flag;
+    };
+    // 点击结束游戏
+    let over=document.querySelector(".over");
+    over.onclick=function(){
+      game.gameover();
+      game.flag=true;
+    }
+</script>
+</html>
